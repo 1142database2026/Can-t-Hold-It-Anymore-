@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4CAF50">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>人有三急</title>
@@ -764,5 +766,45 @@ if(locationEnabled&&userLat!==null&&userLng!==null){
 latestResults=results;const selectedNames=getSelectedServiceNames();const logicText=selectedNames.length>1?`已套用交集條件:${selectedNames.join('＋')} 全部都要有`:selectedNames.length===1?`已套用條件:需要 ${selectedNames[0]}`:'';const mapBox=renderMapBox(results);document.getElementById('results-area').innerHTML=`<div class="results-header"><span class="results-count">找到 <strong>${results.length}</strong> 間門市</span>${logicText?`<span style="font-size:12px;color:var(--accent2)">${escapeHtml(logicText)}</span>`:''}${locationEnabled?`<span style="font-size:12px;color:var(--accent2)">📍 依距離排序</span>`:''}</div>${mapBox}${results.map((s,i)=>{const serviceNames=[...new Set((s.store_service||[]).map(ss=>formatServiceName(ss.service?.service_name,s)).filter(Boolean))];const mapsUrl=buildGoogleMapsSearchUrl(s);const distanceBlock=buildDistanceBlock(s);return `<div class="store-card" data-store-id="${escapeHtml(s.store_id)}" onclick="focusStoreOnMap('${escapeHtml(s.store_id)}')" style="animation-delay:${i*0.04}s"><div class="store-info"><div class="store-top"><span class="brand-badge">${escapeHtml(s.brand?.brand_name||'—')}</span><span class="store-name">${escapeHtml(s.store_name||'—')}</span></div><div class="store-address">📍 ${escapeHtml(s.fullAddress||'—')}</div><div class="services">${serviceNames.length?serviceNames.map(name=>`<span class="service-tag">${escapeHtml(name)}</span>`).join(''):'<span class="service-tag">無服務標籤</span>'}</div></div><div class="store-right">${distanceBlock}<button class="ar-btn" onclick="event.stopPropagation(); openARByStoreId('${escapeHtml(s.store_id)}')">📷 AR 指路</button><a class="nav-btn" href="${mapsUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">🗺 Google Maps</a></div></div>`;}).join('')}`;setTimeout(()=>renderResultsMap(results),0);}
 Promise.all([loadServices(),loadBrands(),loadAreaData()]).then(()=>{updateLocationDebug();updateServiceLogicHint();});
 </script>
-</body>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(() => console.log("SW registered"));
+}
+</script>
+<!-- iOS 安裝提示引導 -->
+<div id="ios-install-prompt" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 350px; background: #22263a; color: white; padding: 15px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; border: 1px solid #4f8ef7; animation: bounce 2s infinite;">
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <div style="font-size: 24px;">📲</div>
+    <div style="font-size: 14px; line-height: 1.4;">
+      以瀏覽器開啟並點擊下方的<strong>「分享」按鈕</strong>，再選擇<strong>「加入主畫面」</strong>，即可作為APP使用。
+    </div>
+    <button onclick="this.parentElement.parentElement.style.display='none'" style="background: none; border: none; color: #7a82a0; font-size: 20px; cursor: pointer;">✕</button>
+  </div>
+  <!-- 小箭頭指向分享按鈕 -->
+  <div style="position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid #22263a;"></div>
+</div>
+
+<style>
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
+  40% {transform: translateX(-50%) translateY(-10px);}
+  60% {transform: translateX(-50%) translateY(-5px);}
+}
+</style>
+<script>
+  function isIos() {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(userAgent);
+  }
+
+  function isInStandaloneMode() {
+    return ('standalone' in window.navigator) && (window.navigator.standalone);
+  }
+
+  // 檢查是否該顯示提示
+  if (isIos() && !isInStandaloneMode()) {
+    document.getElementById('ios-install-prompt').style.display = 'block';
+  }
+</script></body>
 </html>
