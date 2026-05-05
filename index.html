@@ -806,5 +806,22 @@ if ("serviceWorker" in navigator) {
   if (isIos() && !isInStandaloneMode()) {
     document.getElementById('ios-install-prompt').style.display = 'block';
   }
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").then(reg => {
+
+    // 有新版本時
+    reg.onupdatefound = () => {
+      const newWorker = reg.installing;
+
+      newWorker.onstatechange = () => {
+        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          // 👉 有新版本 → 直接刷新
+          window.location.reload();
+        }
+      };
+    };
+
+  });
+}
 </script></body>
 </html>
