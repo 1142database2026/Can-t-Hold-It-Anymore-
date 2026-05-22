@@ -48,7 +48,7 @@ jobs:
 
       # ---------- 把比對結果存成 artifact 供 deploy job 使用 ----------
       - name: Upload diff artifact
-        uses: actions/upload-artifact@v8
+        uses: actions/upload-artifact@v7
         with:
           name: diff-payload
           path: diff_payload/          # 03_compare.py 輸出的 JSON 變動檔
@@ -68,7 +68,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
