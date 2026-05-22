@@ -1,0 +1,89 @@
+name: Store Data Sync with Approval Flow
+
+on:
+  schedule:
+    - cron: '0 1 1 3,6,9,12 *'   # 每年3,6,9,12月 1 號凌晨 1:00 UTC
+  workflow_dispatch:        # 手動觸發
+
+jobs:
+  # ============================================================
+  # JOB 1：爬蟲 → 合併 → 比對 → 產報告
+  # ============================================================
+  compare-data:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pandas openpyxl supabase
+
+      # ---------- 爬蟲 ----------
+      - name: Crawl 7-ELEVEN
+        run: python scripts/01a_seven_eleven.py
+
+      - name: Crawl FamilyMart
+        run: python scripts/01b_familymart.py
+
+      # ---------- 合併 ----------
+      - name: Merge store data
+        run: python scripts/02_merge_store.py
+
+      # ---------- 比對 Supabase + 產報告 ----------
+      - name: Compare with Supabase & generate report
+        id: check
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/03_compare.py
+
+      # ---------- 把比對結果存成 artifact 供 deploy job 使用 ----------
+      - name: Upload diff artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: diff-payload
+          path: diff_payload/          # 03_compare.py 輸出的 JSON 變動檔
+          retention-days: 3
+
+  # ============================================================
+  # JOB 2：人工審批 → 批次寫入 Supabase
+  # ============================================================
+  deploy-data:
+    runs-on: ubuntu-latest
+    needs: compare-data
+    if: needs.compare-data.outputs.has_changes == 'true'
+    environment: database_update             # ← GitHub Environment 審批卡關在這裡
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install supabase pandas
+
+      - name: Download diff artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: diff-payload
+          path: diff_payload/
+
+      - name: Deploy to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/04_deploy.py
