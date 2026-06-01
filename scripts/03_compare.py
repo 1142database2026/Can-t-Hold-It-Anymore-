@@ -32,7 +32,7 @@ SERVICE_COL   = {"TOILET": 1, "SEAT": 2, "PBK": 3}
 BRAND_NAME    = {1: "7-ELEVEN", 2: "全家"}
 
 # 比對 store 表時，這些欄位有差異才算「修改」
-UPDATE_COLS   = ["town_id", "store_location"]
+UPDATE_COLS = ["town_id", "official_id", "store_name", "store_location"]
 
 os.makedirs(PAYLOAD_DIR, exist_ok=True)
 
