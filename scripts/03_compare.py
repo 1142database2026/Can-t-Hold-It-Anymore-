@@ -232,10 +232,10 @@ def write_summary(to_insert, to_update, to_delete, svc_insert, svc_delete, db_st
             lines.append(f"\n> ⚠️ 僅顯示前 50 筆，共 {len(to_update)} 筆")
         lines.append("")
 
-        # 修改細節（展開前 10 筆）
-        lines.append("<details><summary>展開修改細節（前 10 筆）</summary>\n")
+        # 修改細節（展開前 30 筆）
+        lines.append("<details><summary>展開修改細節（前 30 筆）</summary>\n")
         lines.append("```json")
-        lines.append(json.dumps(to_update[:10], ensure_ascii=False, indent=2))
+        lines.append(json.dumps(to_update[:30], ensure_ascii=False, indent=2))
         lines.append("```")
         lines.append("</details>\n")
 
