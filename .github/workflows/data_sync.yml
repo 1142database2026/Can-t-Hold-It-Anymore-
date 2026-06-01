@@ -2,7 +2,7 @@ name: Store Data Sync with Approval Flow
 
 on:
   schedule:
-    - cron: '0 1 1 * *'   # 每月 1 號凌晨 1:00 UTC，台灣時間為早上 9:00
+    - cron: '31 9 2 * *'   # 每月 2 號早上 9:31 UTC
   workflow_dispatch:        # 手動觸發
 
 jobs:
