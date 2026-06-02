@@ -210,11 +210,11 @@ def write_summary(to_insert, to_update, to_delete, svc_insert, svc_delete, db_st
     # store 新增
     if to_insert:
         lines.append(f"## ✅ store 新增（{len(to_insert)} 筆）\n")
-        lines.append("| brand | official_id | store_name | town_id |")
-        lines.append("|-------|-------------|------------|---------|")
+        lines.append("| store_id | brand | official_id | store_name | town_id |")
+        lines.append("|----------|-------|-------------|------------|---------|")
         for r in to_insert[:50]:
             brand = BRAND_NAME.get(r["brand_id"], "?")
-            lines.append(f"| {brand} | {r['official_id']} | {r['store_name']} | {r['town_id']} |")
+            lines.append(f"| {r['store_id']} | {brand} | {r['official_id']} | {r['store_name']} | {r['town_id']} |")
         if len(to_insert) > 50:
             lines.append(f"\n> ⚠️ 僅顯示前 50 筆，共 {len(to_insert)} 筆")
         lines.append("")
