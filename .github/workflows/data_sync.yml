@@ -52,7 +52,7 @@ jobs:
         with:
           name: diff-payload
           path: diff_payload/          # 03_compare.py 輸出的 JSON 變動檔
-          retention-days: 3
+          retention-days: 10
 
   # ============================================================
   # JOB 2：人工審批 → 批次寫入 Supabase
